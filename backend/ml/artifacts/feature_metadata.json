@@ -1,0 +1,145 @@
+{
+  "dataset_version": "1.0.0",
+  "generated_at": "2026-08-10T16:59:28.301277+00:00",
+  "total_records": 5000,
+  "random_state": 42,
+  "models": {
+    "success_model": {
+      "target": "success",
+      "type": "binary_classification",
+      "numeric_features": [
+        "investment_amount",
+        "expected_monthly_revenue",
+        "expected_monthly_expenses",
+        "employee_count",
+        "experience_years",
+        "market_demand",
+        "business_age",
+        "profit_estimate",
+        "profit_margin",
+        "revenue_to_expense_ratio",
+        "investment_to_revenue_ratio",
+        "experience_score",
+        "market_opportunity_score",
+        "financial_health_score",
+        "customer_market_score",
+        "competition_score_num"
+      ],
+      "categorical_features": [
+        "business_category",
+        "business_model",
+        "location",
+        "target_customer",
+        "funding_source",
+        "investment_category"
+      ]
+    },
+    "risk_model": {
+      "target": "risk_level",
+      "type": "multiclass_classification",
+      "classes": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "numeric_features": [
+        "investment_amount",
+        "expected_monthly_revenue",
+        "expected_monthly_expenses",
+        "employee_count",
+        "experience_years",
+        "market_demand",
+        "business_age",
+        "profit_estimate",
+        "profit_margin",
+        "revenue_to_expense_ratio",
+        "investment_to_revenue_ratio",
+        "experience_score",
+        "market_opportunity_score",
+        "financial_health_score",
+        "customer_market_score",
+        "competition_score_num"
+      ],
+      "categorical_features": [
+        "business_category",
+        "business_model",
+        "location",
+        "target_customer",
+        "funding_source",
+        "investment_category"
+      ]
+    },
+    "roi_model": {
+      "target": "roi",
+      "type": "regression",
+      "numeric_features": [
+        "investment_amount",
+        "expected_monthly_revenue",
+        "expected_monthly_expenses",
+        "employee_count",
+        "experience_years",
+        "market_demand",
+        "business_age",
+        "profit_estimate",
+        "profit_margin",
+        "revenue_to_expense_ratio",
+        "investment_to_revenue_ratio",
+        "experience_score",
+        "market_opportunity_score",
+        "financial_health_score",
+        "customer_market_score",
+        "competition_score_num"
+      ],
+      "categorical_features": [
+        "business_category",
+        "business_model",
+        "location",
+        "target_customer",
+        "funding_source",
+        "investment_category"
+      ]
+    },
+    "competition_model": {
+      "target": "competition_level",
+      "type": "multiclass_classification",
+      "classes": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "numeric_features": [
+        "investment_amount",
+        "expected_monthly_revenue",
+        "expected_monthly_expenses",
+        "employee_count",
+        "experience_years",
+        "market_demand",
+        "business_age",
+        "profit_estimate",
+        "profit_margin",
+        "revenue_to_expense_ratio",
+        "investment_to_revenue_ratio",
+        "experience_score",
+        "market_opportunity_score",
+        "financial_health_score",
+        "customer_market_score"
+      ],
+      "categorical_features": [
+        "business_category",
+        "business_model",
+        "location",
+        "target_customer",
+        "funding_source",
+        "investment_category"
+      ]
+    }
+  },
+  "all_targets": [
+    "success",
+    "roi",
+    "risk_level",
+    "competition_level",
+    "business_score"
+  ],
+  "synthetic_dataset_disclaimer": "This dataset is SYNTHETIC and generated for academic demonstration. It does NOT represent real-world proprietary business data. Predictions from this system should NOT be used for actual investment decisions."
+}

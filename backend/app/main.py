@@ -22,13 +22,32 @@ logger = get_logger(__name__)
 
 
 # ─── Lifespan (startup / shutdown) ──────────────────────────────────────────
+from app.core.model_manager import get_model_manager
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: initialize resources on startup, cleanup on shutdown."""
     setup_logging()
 
+    # Initialize ML Engine & Load Trained Models
+    try:
+        model_manager = get_model_manager()
+        model_manager.initialize()
+    except Exception as e:
+        logger.error(f"Failed to initialize ML Engine: {e}")
+
+    def sync_db_schema(sync_conn):
+        from sqlalchemy import inspect
+        Base.metadata.create_all(sync_conn)
+        inspector = inspect(sync_conn)
+        if "marketing_strategies" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("marketing_strategies")]
+            if "user_id" not in columns:
+                Base.metadata.tables["marketing_strategies"].drop(sync_conn, checkfirst=True)
+                Base.metadata.create_all(sync_conn)
+
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(sync_db_schema)
 
     yield
 

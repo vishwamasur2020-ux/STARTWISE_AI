@@ -205,7 +205,7 @@ class PredictionResult(Base, UUIDMixin):
     startup_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("startup_ideas.id", ondelete="CASCADE"),
-        unique=True,
+        unique=False,
         nullable=False,
         index=True,
     )
@@ -274,6 +274,11 @@ class Franchise(Base, UUIDMixin, TimestampMixin):
     disadvantages: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
+    business_model: Mapped[Optional[str]] = mapped_column(String(100), default="Franchise", nullable=True)
+    experience_required: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    market_demand: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    target_customer: Mapped[Optional[str]] = mapped_column(String(255), default="General Public", nullable=True)
+
     # Spec Aliases
     @property
     def name(self) -> str:
@@ -282,6 +287,30 @@ class Franchise(Base, UUIDMixin, TimestampMixin):
     @name.setter
     def name(self, val: str):
         self.franchise_name = val
+
+
+# ─── Franchise Recommendation Model ──────────────────────────────────────────
+class FranchiseRecommendation(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "franchise_recommendations"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    startup_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("startup_ideas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    franchise_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("franchises.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    match_score: Mapped[float] = mapped_column(Float, nullable=False)
+    ranking_position: Mapped[int] = mapped_column(Integer, nullable=False)
+    recommendation_type: Mapped[str] = mapped_column(String(50), default="PRIMARY", nullable=False)  # PRIMARY / ALTERNATIVE
+    explanation: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+
+    # Relationships
+    user: Mapped["User"] = relationship()
+    startup_idea: Mapped["StartupIdea"] = relationship()
+    franchise: Mapped["Franchise"] = relationship()
 
     @property
     def category(self) -> str:
@@ -328,12 +357,33 @@ class Franchise(Base, UUIDMixin, TimestampMixin):
 class MarketingStrategy(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "marketing_strategies"
 
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    startup_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("startup_ideas.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     business_category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    strategy_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    platform: Mapped[str] = mapped_column(String(100), nullable=False)  # Digital, Social, Print, SEO, etc.
-    estimated_budget: Mapped[str] = mapped_column(String(100), nullable=True)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
+    strategy_name: Mapped[str] = mapped_column(String(255), default="Personalized AI Marketing Strategy", nullable=False)
+    platform: Mapped[str] = mapped_column(String(100), default="Omnichannel", nullable=False)
+    estimated_budget: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    description: Mapped[str] = mapped_column(Text, default="Personalized AI Marketing & Promotion Strategy", nullable=False)
     expected_result: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Stage 9 Multi-channel strategy fields
+    total_budget: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    strategy_type: Mapped[str] = mapped_column(String(50), default="BALANCED", nullable=False)  # LOW_BUDGET, BALANCED, AGGRESSIVE
+    marketing_score: Mapped[float] = mapped_column(Float, default=85.0, nullable=False)
+    recommended_channels: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    budget_allocation: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    campaign_ideas: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    content_strategy: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    kpis: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    thirty_day_plan: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+
+    # Relationships
+    user: Mapped[Optional["User"]] = relationship()
+    startup_idea: Mapped[Optional["StartupIdea"]] = relationship()
 
     # Spec Aliases
     @property
