@@ -1,8 +1,4 @@
-/**
- * STARTWISE AI — Dashboard Page Component
- * Interactive dashboard home with Recharts metrics, quick actions, and recent predictions feed.
- */
-
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -14,6 +10,9 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -30,6 +29,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { GlassCard, StatsCard } from '@/components/ui/Card'
 import { useAuth } from '@/hooks/useAuth'
+import { XAIExplanationModal } from '@/components/xai/XAIExplanationModal'
 
 const TREND_DATA = [
   { month: 'Jan', probability: 72, roi: 24 },
@@ -73,6 +73,11 @@ const RECENT_PREDICTIONS = [
 export default function DashboardPage() {
   const { user } = useAuth()
   const userName = user?.full_name?.split(' ')[0] || 'Founder'
+  const [xaiModalOpen, setXaiModalOpen] = useState(false)
+  const [selectedPrediction, setSelectedPrediction] = useState<{ id: string; name: string }>({
+    id: '1',
+    name: 'Smart Chai Point Cafe',
+  })
 
   return (
     <div className="space-y-8 pb-12">
@@ -212,6 +217,90 @@ export default function DashboardPage() {
         </GlassCard>
       </div>
 
+      {/* ── Explainable AI (XAI) Feature Attribution Section ─────────────────── */}
+      <GlassCard className="p-6 sm:p-8 space-y-5 border border-cyan-500/20 bg-gradient-to-r from-cyan-500/5 via-blue-500/5 to-indigo-500/5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                  Explainable AI Insights (SHAP Attribution)
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
+                  Live Model Engine
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">
+                Transparent factor attribution for your latest concept: <strong>{selectedPrediction.name}</strong>
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setXaiModalOpen(true)}
+            size="sm"
+            leftIcon={<Sparkles className="h-4 w-4 text-cyan-400" />}
+            className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md whitespace-nowrap"
+          >
+            View Full Explanation
+          </Button>
+        </div>
+
+        {/* Factors Highlight Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Positive Factors */}
+          <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2.5">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4" /> Top 3 Positive Contributors
+            </span>
+            <div className="space-y-1.5 text-xs text-slate-700 dark:text-zinc-300">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Strong Market Demand (8/10)</span>
+                <span className="font-mono text-[11px] text-emerald-500 ml-auto">+0.21 SHAP</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Healthy Profit Margin (35%)</span>
+                <span className="font-mono text-[11px] text-emerald-500 ml-auto">+0.14 SHAP</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Relevant Industry Experience (5 yrs)</span>
+                <span className="font-mono text-[11px] text-emerald-500 ml-auto">+0.09 SHAP</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Negative Factors */}
+          <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-2.5">
+            <span className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4" /> Top 3 Resistance Factors
+            </span>
+            <div className="space-y-1.5 text-xs text-slate-700 dark:text-zinc-300">
+              <div className="flex items-center gap-2">
+                <span className="text-rose-500 font-bold">⚠</span>
+                <span className="font-semibold text-slate-900 dark:text-white">High Local Competition</span>
+                <span className="font-mono text-[11px] text-rose-500 ml-auto">-0.09 SHAP</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-rose-500 font-bold">⚠</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Initial Operating Overhead</span>
+                <span className="font-mono text-[11px] text-rose-500 ml-auto">-0.06 SHAP</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-rose-500 font-bold">⚠</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Customer Acquisition Density</span>
+                <span className="font-mono text-[11px] text-rose-500 ml-auto">-0.04 SHAP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </GlassCard>
+
       {/* ── Quick Actions & Recent Predictions ───────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Quick Action Grid */}
@@ -281,10 +370,19 @@ export default function DashboardPage() {
             {RECENT_PREDICTIONS.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-700/60 hover:border-cyan-500/40 transition-colors"
+                onClick={() => {
+                  setSelectedPrediction({ id: item.id, name: item.name })
+                  setXaiModalOpen(true)
+                }}
+                className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-700/60 hover:border-cyan-500/40 transition-colors cursor-pointer group"
               >
                 <div className="space-y-1">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{item.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-cyan-500 transition-colors">{item.name}</p>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Explain →
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
                     <span>{item.category}</span>
                     <span>•</span>
@@ -306,6 +404,14 @@ export default function DashboardPage() {
           </div>
         </GlassCard>
       </div>
+
+      {/* ── XAI Modal ──────────────────────────────────────────────────────── */}
+      <XAIExplanationModal
+        isOpen={xaiModalOpen}
+        onClose={() => setXaiModalOpen(false)}
+        predictionId={selectedPrediction.id}
+        businessName={selectedPrediction.name}
+      />
     </div>
   )
 }

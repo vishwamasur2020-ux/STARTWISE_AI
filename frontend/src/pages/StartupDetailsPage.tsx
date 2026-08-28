@@ -1,6 +1,6 @@
 /**
- * STARTWISE AI — Startup Details Page Component
- * Detailed view displaying business, financial, and market parameters alongside AI score placeholders.
+ * STARTWISE AI — Startup Details Page Component (Stage 7)
+ * Detailed view displaying startup parameters alongside live AI Prediction Engine results.
  */
 
 import { useState } from 'react'
@@ -13,21 +13,25 @@ import {
   Trash2,
   Calendar,
   BrainCircuit,
+  Loader2,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
-import { GlassCard, AIResultCard } from '@/components/ui/Card'
+import { GlassCard } from '@/components/ui/Card'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useStartupDetails, useDeleteStartup } from '@/hooks/useStartups'
+import { useGetPrediction } from '@/hooks/usePredictions'
+import { PredictionResultsView } from '@/components/dashboard/PredictionResultsView'
 
 export default function StartupDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const { data: startup, isLoading } = useStartupDetails(id || '')
+  const { data: startup, isLoading: startupLoading } = useStartupDetails(id || '')
+  const { data: prediction, isLoading: predictionLoading } = useGetPrediction(id || '', !!id)
   const deleteMutation = useDeleteStartup()
 
   const handleDelete = () => {
@@ -40,9 +44,9 @@ export default function StartupDetailsPage() {
     })
   }
 
-  if (isLoading) {
+  if (startupLoading) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto py-8">
+      <div className="space-y-6 max-w-5xl mx-auto py-8">
         <Skeleton className="h-8 w-64 rounded-xl" />
         <Skeleton className="h-48 w-full rounded-3xl" />
         <Skeleton className="h-64 w-full rounded-3xl" />
@@ -69,7 +73,7 @@ export default function StartupDetailsPage() {
   })
 
   return (
-    <div className="space-y-8 pb-16 max-w-4xl mx-auto">
+    <div className="space-y-8 pb-16 max-w-5xl mx-auto">
       <Breadcrumb
         items={[
           { label: 'AI Validation', href: '/startup-validation' },
@@ -109,14 +113,6 @@ export default function StartupDetailsPage() {
           </Button>
         </div>
       </div>
-
-      {/* AI Prediction Placeholder Result Card */}
-      <AIResultCard
-        score={startup.prediction_result?.success_probability || 91.5}
-        riskLevel={startup.prediction_result?.risk_level || 'Low'}
-        estimatedRoi={startup.prediction_result?.estimated_roi || 38.4}
-        summary="High commercial feasibility score backed by regional market demand and favorable operating margins."
-      />
 
       {/* Parameter Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -158,6 +154,29 @@ export default function StartupDetailsPage() {
             <p><span className="text-slate-400">Founder Experience:</span> {startup.experience_years} Years</p>
           </div>
         </GlassCard>
+      </div>
+
+      {/* AI Prediction Results View */}
+      <div className="space-y-4 pt-4">
+        <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <BrainCircuit className="h-5 w-5 text-cyan-500" /> AI Machine Learning Analysis Results
+        </h2>
+
+        {predictionLoading ? (
+          <GlassCard className="p-12 text-center space-y-4">
+            <Loader2 className="h-8 w-8 text-cyan-500 animate-spin mx-auto" />
+            <p className="text-xs text-slate-500">Loading live ML model prediction results...</p>
+          </GlassCard>
+        ) : prediction ? (
+          <PredictionResultsView prediction={prediction} />
+        ) : (
+          <GlassCard className="p-8 text-center space-y-4">
+            <p className="text-xs text-slate-500">No ML prediction result generated for this startup yet.</p>
+            <Link to="/startup-validation">
+              <Button size="sm" className="bg-cyan-500 text-white rounded-xl">Run AI Analysis</Button>
+            </Link>
+          </GlassCard>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

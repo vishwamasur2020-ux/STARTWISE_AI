@@ -125,6 +125,35 @@ export default function ReportsPage() {
             </p>
           </div>
 
+          {/* XAI Attribution Summary in PDF Preview */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 space-y-3 border border-slate-200/80 dark:border-zinc-700/80">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="text-cyan-500 font-black">✦</span> Explainable AI (XAI) Attribution
+              </h4>
+              <span className="text-[10px] text-slate-400 font-mono">SHAP TreeExplainer</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  ✓ Positive Attribution
+                </span>
+                <p className="text-[11px] text-slate-600 dark:text-zinc-300">
+                  Strong market demand & healthy revenue multiples.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-1">
+                <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
+                  ⚠ Resistance Factors
+                </span>
+                <p className="text-[11px] text-slate-600 dark:text-zinc-300">
+                  Local category density & initial capital payback.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <Button
             onClick={() => {
               if (selectedReport) handleDownload(selectedReport.title)

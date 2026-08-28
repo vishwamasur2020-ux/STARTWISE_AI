@@ -247,10 +247,39 @@ class PredictionResult(Base, UUIDMixin):
 
     # Relationships
     startup_idea: Mapped["StartupIdea"] = relationship(back_populates="prediction_result")
+    explanations: Mapped[List["PredictionExplanation"]] = relationship(
+        back_populates="prediction_result", cascade="all, delete-orphan"
+    )
 
     @property
     def business_idea(self) -> StartupIdea:
         return self.startup_idea
+
+
+# ─── Prediction Explanation Model (Stage 13 XAI) ─────────────────────────────
+class PredictionExplanation(Base, UUIDMixin):
+    __tablename__ = "prediction_explanations"
+
+    prediction_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("prediction_results.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    model_name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # success, risk, roi, competition, combined
+    explanation_method: Mapped[str] = mapped_column(String(100), nullable=False)     # SHAP TreeExplainer, SHAP LinearExplainer, etc.
+    feature_contributions: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True) # Full list of features & SHAP values
+    positive_factors: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)      # Ranked positive drivers
+    negative_factors: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)      # Ranked negative drivers
+    summary: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)               # Narrative insights & decision summary
+    model_version: Mapped[str] = mapped_column(String(50), default="1.0.0", nullable=False)
+    explanation_version: Mapped[str] = mapped_column(String(50), default="1.0.0", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+    # Relationships
+    prediction_result: Mapped["PredictionResult"] = relationship(back_populates="explanations")
 
 
 # ─── Franchise Model ─────────────────────────────────────────────────────────

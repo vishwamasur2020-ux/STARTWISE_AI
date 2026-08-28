@@ -6,7 +6,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import toast from 'react-hot-toast'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+const BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // ─── Axios Instance ──────────────────────────────────────────────────────────
 export const api = axios.create({
@@ -85,7 +85,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+        const response = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, {
           refresh_token: refreshToken,
         })
         const { access_token, refresh_token } = response.data

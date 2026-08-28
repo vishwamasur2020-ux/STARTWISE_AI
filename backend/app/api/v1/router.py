@@ -1,10 +1,10 @@
 """
 STARTWISE AI — Main API Router (v1)
-Aggregates all endpoint routers for authentication, users, and startups.
+Aggregates all endpoint routers for authentication, users, startups, and admin panel.
 """
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, startups, predictions, ml, franchises, recommendations, marketing, dashboard
+from app.api.v1.endpoints import auth, users, startups, predictions, ml, franchises, recommendations, marketing, dashboard, admin, explainability
 
 api_router = APIRouter()
 
@@ -17,3 +17,6 @@ api_router.include_router(franchises.router)
 api_router.include_router(recommendations.router)
 api_router.include_router(marketing.router)
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+api_router.include_router(admin.router, tags=["Admin Panel"])
+api_router.include_router(explainability.router)
+

@@ -54,6 +54,14 @@ class Settings(BaseSettings):
 
     # ── ML ───────────────────────────────────────────────────────────────────
     ML_MODELS_PATH: str = "app/ml/models"
+    MODEL_VERSION: str = "1.0.0"
+
+    # ── Email & Reports ──────────────────────────────────────────────────────
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "STARTWISE AI <onboarding@resend.dev>"
+    EMAIL_FROM_NAME: str = "STARTWISE AI"
+    EMAIL_ENABLED: bool = False
+    REPORT_STORAGE_DIR: str = "reports"
 
     # ── Logging ──────────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"

@@ -29,6 +29,12 @@ env/
 *.h5
 *.model
 
+# ML artifacts and generated data (Stage 6)
+backend/ml/artifacts/*.joblib
+backend/ml/artifacts/plots/
+backend/ml/data/processed/
+backend/ml/data/raw/*.csv
+
 # Logs
 logs/
 *.log

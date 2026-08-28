@@ -18,21 +18,21 @@ import type {
 export const authService = {
   /** Register a new user */
   register: async (payload: RegisterPayload): Promise<User> => {
-    const { data } = await api.post<User>('/auth/register', payload)
+    const { data } = await api.post<User>('/api/v1/auth/register', payload)
     return data
   },
 
   /** Login and store tokens */
   login: async (payload: LoginPayload): Promise<{ tokens: TokenPair; user: User }> => {
-    const { data: tokens } = await api.post<TokenPair>('/auth/login', payload)
+    const { data: tokens } = await api.post<TokenPair>('/api/v1/auth/login', payload)
     setTokens(tokens.access_token, tokens.refresh_token)
-    const { data: user } = await api.get<User>('/auth/me')
+    const { data: user } = await api.get<User>('/api/v1/auth/me')
     return { tokens, user }
   },
 
   /** Get current authenticated user */
   getMe: async (): Promise<User> => {
-    const { data } = await api.get<User>('/auth/me')
+    const { data } = await api.get<User>('/api/v1/auth/me')
     return data
   },
 
@@ -40,7 +40,7 @@ export const authService = {
   refreshToken: async (): Promise<TokenPair> => {
     const currentRefresh = getRefreshToken()
     if (!currentRefresh) throw new Error('No refresh token available')
-    const { data: tokens } = await api.post<TokenPair>('/auth/refresh', {
+    const { data: tokens } = await api.post<TokenPair>('/api/v1/auth/refresh', {
       refresh_token: currentRefresh,
     })
     setTokens(tokens.access_token, tokens.refresh_token)
@@ -51,7 +51,7 @@ export const authService = {
   logout: async (): Promise<void> => {
     try {
       const currentRefresh = getRefreshToken()
-      await api.post<MessageResponse>('/auth/logout', {
+      await api.post<MessageResponse>('/api/v1/auth/logout', {
         refresh_token: currentRefresh,
       })
     } catch {
@@ -63,19 +63,19 @@ export const authService = {
 
   /** Request password reset OTP/token */
   forgotPassword: async (payload: ForgotPasswordPayload): Promise<MessageResponse> => {
-    const { data } = await api.post<MessageResponse>('/auth/forgot-password', payload)
+    const { data } = await api.post<MessageResponse>('/api/v1/auth/forgot-password', payload)
     return data
   },
 
   /** Reset password with OTP/token */
   resetPassword: async (payload: ResetPasswordPayload): Promise<MessageResponse> => {
-    const { data } = await api.post<MessageResponse>('/auth/reset-password', payload)
+    const { data } = await api.post<MessageResponse>('/api/v1/auth/reset-password', payload)
     return data
   },
 
   /** Update user profile */
   updateProfile: async (payload: UserUpdatePayload): Promise<User> => {
-    const { data } = await api.patch<User>('/users/profile', payload)
+    const { data } = await api.patch<User>('/api/v1/users/profile', payload)
     return data
   },
 }

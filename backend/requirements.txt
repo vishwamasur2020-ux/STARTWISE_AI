@@ -25,9 +25,10 @@ pandas>=2.2.0
 numpy>=2.1.0
 joblib>=1.4.0
 
-# ── ML Visualization (Stage 6) ────────────────────────────────────────────────
+# ── ML Visualization & XAI (Stages 6 & 13) ────────────────────────────────────
 matplotlib>=3.8.0
 seaborn>=0.13.0
+shap>=0.45.0
 
 # ── Utilities ─────────────────────────────────────────
 python-dotenv==1.0.1

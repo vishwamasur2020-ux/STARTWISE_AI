@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
+import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/layout/ProtectedRoute'
 import { DashboardSkeleton } from '@/components/ui/Skeleton'
 import { useTheme } from '@/hooks/useTheme'
@@ -28,8 +29,24 @@ const EditStartupPage       = lazy(() => import('@/pages/EditStartupPage'))
 const StartupDetailsPage    = lazy(() => import('@/pages/StartupDetailsPage'))
 const StartupHistoryPage    = lazy(() => import('@/pages/StartupHistoryPage'))
 const FranchisePage         = lazy(() => import('@/pages/FranchisePage'))
+const MarketingPage         = lazy(() => import('@/pages/MarketingPage'))
 const ReportsPage           = lazy(() => import('@/pages/ReportsPage'))
-const AdminDashboardPage    = lazy(() => import('@/pages/AdminDashboardPage'))
+
+// Admin Pages
+const AdminDashboardPage     = lazy(() => import('@/pages/AdminDashboardPage'))
+const AdminUsersPage         = lazy(() => import('@/pages/admin/AdminUsersPage'))
+const AdminUserDetailPage    = lazy(() => import('@/pages/admin/AdminUserDetailPage'))
+const AdminStartupsPage      = lazy(() => import('@/pages/admin/AdminStartupsPage'))
+const AdminStartupDetailPage = lazy(() => import('@/pages/admin/AdminStartupDetailPage'))
+const AdminPredictionsPage   = lazy(() => import('@/pages/admin/AdminPredictionsPage'))
+const AdminFranchisesPage    = lazy(() => import('@/pages/admin/AdminFranchisesPage'))
+const AdminMarketingPage     = lazy(() => import('@/pages/admin/AdminMarketingPage'))
+const AdminReportsPage       = lazy(() => import('@/pages/admin/AdminReportsPage'))
+const AdminMLPage            = lazy(() => import('@/pages/admin/AdminMLPage'))
+const AdminAuditLogsPage     = lazy(() => import('@/pages/admin/AdminAuditLogsPage'))
+const AdminAnalyticsPage     = lazy(() => import('@/pages/admin/AdminAnalyticsPage'))
+const AdminSettingsPage      = lazy(() => import('@/pages/admin/AdminSettingsPage'))
+
 const NotFoundPage          = lazy(() => import('@/pages/NotFoundPage'))
 
 // ── Query Client Config ───────────────────────────────────────────────────────
@@ -88,21 +105,33 @@ export default function App() {
                   <Route path="/startup-validation"          element={<StartupValidationPage />} />
                   <Route path="/startup-validation/new"      element={<CreateStartupPage />} />
                   <Route path="/startup-validation/edit/:id" element={<EditStartupPage />} />
-                  <Route path="/startup-validation/history text-sans"  element={<StartupHistoryPage />} />
-                  <Route path="/startup-validation/history font-sans" element={<StartupHistoryPage />} />
-                  <Route path="/startup-validation/history" element={<StartupHistoryPage />} />
+                  <Route path="/startup-validation/history"  element={<StartupHistoryPage />} />
                   <Route path="/startup-validation/:id"      element={<StartupDetailsPage />} />
                   <Route path="/validate"                    element={<StartupValidationPage />} />
                   <Route path="/franchise"                   element={<FranchisePage />} />
                   <Route path="/franchises"                  element={<FranchisePage />} />
+                  <Route path="/marketing"                   element={<MarketingPage />} />
                   <Route path="/reports"                     element={<ReportsPage />} />
                   <Route path="/profile"                     element={<ProfilePage />} />
-                  <Route path="/settings font-sans"          element={<ProfilePage />} />
                   <Route path="/settings"                    element={<ProfilePage />} />
+                </Route>
 
-                  {/* Admin Only Route Guard */}
-                  <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                {/* Admin Only Layout & Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                  <Route element={<AdminLayout />}>
                     <Route path="/admin" element={<AdminDashboardPage />} />
+                    <Route path="/admin/users" element={<AdminUsersPage />} />
+                    <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+                    <Route path="/admin/startups" element={<AdminStartupsPage />} />
+                    <Route path="/admin/startups/:id" element={<AdminStartupDetailPage />} />
+                    <Route path="/admin/predictions" element={<AdminPredictionsPage />} />
+                    <Route path="/admin/franchises" element={<AdminFranchisesPage />} />
+                    <Route path="/admin/marketing" element={<AdminMarketingPage />} />
+                    <Route path="/admin/reports" element={<AdminReportsPage />} />
+                    <Route path="/admin/ml" element={<AdminMLPage />} />
+                    <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
+                    <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+                    <Route path="/admin/settings" element={<AdminSettingsPage />} />
                   </Route>
                 </Route>
               </Route>

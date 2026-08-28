@@ -87,6 +87,16 @@ def create_application() -> FastAPI:
         period=settings.RATE_LIMIT_PERIOD,
     )
 
+    # ── Security Headers Middleware ──────────────────────────────────────────
+    @app.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        return response
+
     # ── Global Exception Handlers ────────────────────────────────────────────
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException):
@@ -106,10 +116,11 @@ def create_application() -> FastAPI:
     # ── API Router ───────────────────────────────────────────────────────────
     app.include_router(api_router, prefix="/api/v1")
 
-    from app.api.v1.endpoints import startups
+    from app.api.v1.endpoints import startups, predictions
     app.include_router(startups.router, prefix="/api/startups", tags=["Startups API"])
+    app.include_router(predictions.router, prefix="/api/predictions", tags=["Predictions API"])
 
-    # ── Health Check ─────────────────────────────────────────────────────────
+    # ── Fast Health Check ────────────────────────────────────────────────────
     @app.get("/health", tags=["Health"])
     async def health_check():
         return JSONResponse(
@@ -119,6 +130,72 @@ def create_application() -> FastAPI:
                 "app": settings.APP_NAME,
                 "version": settings.APP_VERSION,
                 "environment": settings.ENVIRONMENT,
+            },
+        )
+
+    # ── Detailed Health Check ────────────────────────────────────────────────
+    @app.get("/api/health", tags=["Health"])
+    @app.get("/api/v1/health", tags=["Health"])
+    async def detailed_health_check():
+        from sqlalchemy import text
+        from app.database.session import AsyncSessionLocal
+        from app.core.model_manager import get_model_manager
+
+        # Check DB
+        db_status = "healthy"
+        try:
+            async with AsyncSessionLocal() as session:
+                await session.execute(text("SELECT 1"))
+        except Exception as e:
+            db_status = f"unhealthy: {str(e)}"
+
+        # Check ML Models
+        mm = get_model_manager()
+        ml_status = {
+            "success_model": "success" in mm.models,
+            "risk_model": "risk" in mm.models,
+            "roi_model": "roi" in mm.models,
+            "competition_model": "competition" in mm.models,
+            "is_loaded": mm.is_loaded,
+        }
+
+        # Check XAI Engine
+        try:
+            import shap
+            shap_available = True
+            shap_version = getattr(shap, "__version__", "unknown")
+        except ImportError:
+            shap_available = False
+            shap_version = "unavailable"
+
+        overall_healthy = (db_status == "healthy") and mm.is_loaded
+
+        return JSONResponse(
+            status_code=200 if overall_healthy else 503,
+            content={
+                "status": "healthy" if overall_healthy else "degraded",
+                "app": settings.APP_NAME,
+                "version": settings.APP_VERSION,
+                "environment": settings.ENVIRONMENT,
+                "services": {
+                    "database": db_status,
+                    "ml_engine": "healthy" if mm.is_loaded else "degraded",
+                    "ml_models": ml_status,
+                    "xai_engine": {
+                        "status": "healthy" if shap_available else "unavailable",
+                        "shap_version": shap_version,
+                        "tree_explainer": "online",
+                        "linear_explainer": "online",
+                    },
+                    "email_service": {
+                        "status": "enabled" if settings.EMAIL_ENABLED else "disabled",
+                        "configured": bool(settings.RESEND_API_KEY and len(settings.RESEND_API_KEY) > 10),
+                    },
+                    "report_service": {
+                        "status": "online",
+                        "storage_dir": settings.REPORT_STORAGE_DIR,
+                    },
+                },
             },
         )
 
