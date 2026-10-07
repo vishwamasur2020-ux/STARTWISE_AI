@@ -56,11 +56,26 @@ class Settings(BaseSettings):
     ML_MODELS_PATH: str = "app/ml/models"
     MODEL_VERSION: str = "1.0.0"
 
-    # ── Email & Reports ──────────────────────────────────────────────────────
-    RESEND_API_KEY: str = ""
-    EMAIL_FROM: str = "STARTWISE AI <onboarding@resend.dev>"
-    EMAIL_FROM_NAME: str = "STARTWISE AI"
+    # ── Email Delivery Configuration ─────────────────────────────────────────
+    EMAIL_PROVIDER: str = "smtp"  # "smtp" | "resend"
     EMAIL_ENABLED: bool = False
+    EMAIL_FROM: str = "STARTWISE AI <noreply@startwise.ai>"
+    EMAIL_FROM_NAME: str = "STARTWISE AI"
+
+    # SMTP Provider Settings
+    SMTP_ENABLED: bool = True
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: Union[SecretStr, str, None] = None
+    SMTP_USE_TLS: bool = True  # STARTTLS for port 587
+    SMTP_USE_SSL: bool = False  # SSL for port 465
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_FROM_NAME: str = "STARTWISE AI"
+    SMTP_TIMEOUT: int = 15
+
+    # Resend Provider Settings
+    RESEND_API_KEY: str = ""
     REPORT_STORAGE_DIR: str = "reports"
 
     # ── External Provider / OAuth Credentials (Backend Only) ────────────────

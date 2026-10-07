@@ -15,7 +15,7 @@ Cloudflare / Custom Domain (SSL/TLS Termination)
          └── API Gateway     ──► Render / Railway / AWS ECS / DigitalOcean (FastAPI Uvicorn)
                                       │
                                       ├── Neon Serverless PostgreSQL (Database)
-                                      ├── Resend API (Transactional Email)
+                                      ├── Email Delivery (SMTP / Resend Provider Architecture)
                                       └── Local / Cloud Object Storage (PDF Decks)
 ```
 
@@ -76,8 +76,17 @@ Cloudflare / Custom Domain (SSL/TLS Termination)
    - `ALLOWED_HOSTS`: `your-backend.onrender.com`
    - `ENVIRONMENT`: `production`
    - `DEBUG`: `false`
-   - `RESEND_API_KEY`: `re_your_api_key`
+   - `EMAIL_PROVIDER`: `smtp`
    - `EMAIL_ENABLED`: `true`
+   - `SMTP_ENABLED`: `true`
+   - `SMTP_HOST`: `smtp.gmail.com`
+   - `SMTP_PORT`: `587`
+   - `SMTP_USERNAME`: `<your-smtp-username>`
+   - `SMTP_PASSWORD`: `<your-smtp-app-password>`
+   - `SMTP_USE_TLS`: `true`
+   - `SMTP_FROM_EMAIL`: `noreply@yourdomain.com`
+   - `SMTP_FROM_NAME`: `STARTWISE AI`
+   - `RESEND_API_KEY`: `re_your_api_key` (Optional fallback)
 3. **Start Command**:
    ```bash
    uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4

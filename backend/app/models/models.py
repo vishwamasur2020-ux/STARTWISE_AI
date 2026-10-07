@@ -551,7 +551,7 @@ class OTPVerification(Base, UUIDMixin):
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     otp_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     purpose: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # EMAIL_VERIFICATION, PASSWORD_RESET
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     attempt_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     max_attempts: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
     created_at: Mapped[datetime] = mapped_column(

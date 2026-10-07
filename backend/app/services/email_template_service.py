@@ -4,12 +4,32 @@ Generates professional branded transactional email templates:
 - Email Verification OTP
 - Password Reset OTP
 - Password Changed Security Notification
+
+Supports reading from templates/email/ directory with responsive HTML
+and plain-text fallbacks.
 """
 
-from typing import Tuple
+import os
+from pathlib import Path
+from typing import Tuple, Optional
 
 
 class EmailTemplateService:
+    @staticmethod
+    def _load_template_file(template_name: str) -> Optional[str]:
+        """Attempt to read template from templates/email or app/templates/email directory."""
+        candidates = [
+            Path(__file__).parent.parent / "templates" / "email" / template_name,
+            Path(__file__).parent.parent.parent / "templates" / "email" / template_name,
+        ]
+        for path in candidates:
+            if path.is_file():
+                try:
+                    return path.read_text(encoding="utf-8")
+                except Exception:
+                    pass
+        return None
+
     @staticmethod
     def _base_html(title: str, content: str) -> str:
         return f"""<!DOCTYPE html>
@@ -25,43 +45,45 @@ class EmailTemplateService:
       background-color: #0b0f19;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       color: #e2e8f0;
+      -webkit-font-smoothing: antialiased;
     }}
     .wrapper {{
       max-width: 580px;
       margin: 32px auto;
       background: #111827;
       border: 1px solid #1f2937;
-      border-radius: 16px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }}
     .header {{
-      background: linear-gradient(135deg, #0e7490 0%, #1d4ed8 50%, #4338ca 100%);
-      padding: 32px 28px;
+      background: linear-gradient(135deg, #0891b2 0%, #2563eb 50%, #4f46e5 100%);
+      padding: 36px 32px;
       text-align: center;
     }}
     .logo {{
       color: #ffffff;
-      font-size: 22px;
-      font-weight: 800;
+      font-size: 24px;
+      font-weight: 900;
       letter-spacing: 0.5px;
       margin: 0;
     }}
     .subtitle {{
-      color: #a5f3fc;
+      color: #cffafe;
       font-size: 13px;
       font-weight: 500;
       margin-top: 6px;
+      margin-bottom: 0;
     }}
     .body {{
       padding: 36px 32px;
     }}
     .greeting {{
-      font-size: 17px;
-      font-weight: 600;
+      font-size: 18px;
+      font-weight: 700;
       color: #ffffff;
       margin-top: 0;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }}
     .text {{
       font-size: 14px;
@@ -71,32 +93,33 @@ class EmailTemplateService:
     }}
     .otp-box {{
       margin: 28px 0;
-      padding: 22px;
+      padding: 24px;
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 12px;
+      border-radius: 14px;
       text-align: center;
     }}
     .otp-label {{
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       color: #38bdf8;
       margin-bottom: 8px;
     }}
     .otp-code {{
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 34px;
+      font-size: 36px;
       font-weight: 800;
-      letter-spacing: 8px;
+      letter-spacing: 10px;
       color: #ffffff;
       margin: 0;
+      padding: 6px 0;
     }}
     .expiry {{
       font-size: 12px;
-      color: #64748b;
-      margin-top: 8px;
+      color: #94a3b8;
+      margin-top: 10px;
     }}
     .footer {{
       padding: 24px 32px;
@@ -105,6 +128,7 @@ class EmailTemplateService:
       text-align: center;
       font-size: 12px;
       color: #64748b;
+      line-height: 1.5;
     }}
     .signature {{
       margin-top: 24px;
@@ -117,7 +141,7 @@ class EmailTemplateService:
   <div class="wrapper">
     <div class="header">
       <h1 class="logo">STARTWISE AI</h1>
-      <p class="subtitle">Intelligent Startup Validation & Recommendation System</p>
+      <p class="subtitle">Intelligent Startup Validation & Franchise Recommendation System</p>
     </div>
     <div class="body">
       {content}
@@ -149,9 +173,18 @@ class EmailTemplateService:
             f"If you did not create this account, you can safely ignore this email.\n\n"
             f"Regards,\n"
             f"STARTWISE AI Team\n"
+            f"Intelligent Startup Validation & Franchise Recommendation System\n"
         )
 
-        html_body = f"""
+        template_str = cls._load_template_file("verify_email.html")
+        if template_str:
+            html_content = (
+                template_str.replace("{{ name }}", display_name)
+                .replace("{{ otp }}", otp)
+                .replace("{{ expiry_minutes }}", str(expiry_minutes))
+            )
+        else:
+            html_body = f"""
       <p class="greeting">Hello {display_name},</p>
       <p class="text">Welcome to <strong>STARTWISE AI</strong>. Thank you for joining our platform to validate business ideas and explore franchise intelligence.</p>
       <div class="otp-box">
@@ -161,7 +194,8 @@ class EmailTemplateService:
       </div>
       <p class="text">If you did not create this account, you can safely ignore this email.</p>
 """
-        html_content = cls._base_html(subject, html_body)
+            html_content = cls._base_html(subject, html_body)
+
         return subject, text_content, html_content
 
     @classmethod
@@ -179,9 +213,18 @@ class EmailTemplateService:
             f"If you did not request this, you can safely ignore this email.\n\n"
             f"Regards,\n"
             f"STARTWISE AI Team\n"
+            f"Intelligent Startup Validation & Franchise Recommendation System\n"
         )
 
-        html_body = f"""
+        template_str = cls._load_template_file("password_reset.html")
+        if template_str:
+            html_content = (
+                template_str.replace("{{ name }}", display_name)
+                .replace("{{ otp }}", otp)
+                .replace("{{ expiry_minutes }}", str(expiry_minutes))
+            )
+        else:
+            html_body = f"""
       <p class="greeting">Hello {display_name},</p>
       <p class="text">We received a request to reset the password for your STARTWISE AI account.</p>
       <div class="otp-box">
@@ -191,7 +234,8 @@ class EmailTemplateService:
       </div>
       <p class="text">If you did not request this, you can safely ignore this email. Your existing password remains secure.</p>
 """
-        html_content = cls._base_html(subject, html_body)
+            html_content = cls._base_html(subject, html_body)
+
         return subject, text_content, html_content
 
     @classmethod
@@ -203,16 +247,23 @@ class EmailTemplateService:
         text_content = (
             f"Hello {display_name},\n\n"
             f"Your STARTWISE AI password was successfully changed.\n\n"
+            f"All existing authentication sessions have been revoked for your security.\n\n"
             f"If you did not perform this change, please contact our security team immediately.\n\n"
             f"Regards,\n"
             f"STARTWISE AI Team\n"
+            f"Intelligent Startup Validation & Franchise Recommendation System\n"
         )
 
-        html_body = f"""
+        template_str = cls._load_template_file("password_changed.html")
+        if template_str:
+            html_content = template_str.replace("{{ name }}", display_name)
+        else:
+            html_body = f"""
       <p class="greeting">Hello {display_name},</p>
       <p class="text">Your STARTWISE AI password was successfully changed.</p>
       <p class="text">All existing authentication sessions have been revoked for your security.</p>
       <p class="text" style="color: #f87171;">If you did not perform this change, please contact our security team immediately.</p>
 """
-        html_content = cls._base_html(subject, html_body)
+            html_content = cls._base_html(subject, html_body)
+
         return subject, text_content, html_content

@@ -205,7 +205,12 @@ def create_application() -> FastAPI:
                     },
                     "email_service": {
                         "status": "enabled" if settings.EMAIL_ENABLED else "disabled",
-                        "configured": bool(settings.RESEND_API_KEY and len(settings.RESEND_API_KEY) > 10),
+                        "provider": settings.EMAIL_PROVIDER,
+                        "configured": bool(
+                            (settings.EMAIL_PROVIDER == "smtp" and bool(settings.SMTP_HOST and settings.SMTP_USERNAME))
+                            or (settings.EMAIL_PROVIDER == "resend" and bool(settings.RESEND_API_KEY and len(settings.RESEND_API_KEY) > 10))
+                        ),
+                        "smtp_enabled": settings.SMTP_ENABLED,
                     },
                     "otp_service": {
                         "status": "online",

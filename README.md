@@ -58,7 +58,7 @@ Deploy:     Docker, Multi-stage Nginx container, Uvicorn ASGI Server
 6. Automated Marketing Strategy Generator (Channel Budget Allocations & CAC Projections)
 7. Dynamic Business Intelligence Dashboard (Interactive Recharts Visualizations)
 8. Multi-Page Investor PDF Report Generation (ReportLab Canvas)
-9. Transactional Email Dispatch (Resend API)
+9. Transactional Email Dispatch (SMTP & Resend Provider Architecture)
 10. Admin Governance (User Management, Audit Logs, ML Health Monitoring)
 ```
 
