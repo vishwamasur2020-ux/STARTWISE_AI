@@ -37,9 +37,21 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize ML Engine: {e}")
 
     def sync_db_schema(sync_conn):
-        from sqlalchemy import inspect
+        from sqlalchemy import inspect, text
         Base.metadata.create_all(sync_conn)
         inspector = inspect(sync_conn)
+        if "users" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("users")]
+            if "email_verified" not in columns:
+                try:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT 0"))
+                except Exception:
+                    pass
+            if "email_verified_at" not in columns:
+                try:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMP NULL"))
+                except Exception:
+                    pass
         if "marketing_strategies" in inspector.get_table_names():
             columns = [c["name"] for c in inspector.get_columns("marketing_strategies")]
             if "user_id" not in columns:
@@ -100,9 +112,12 @@ def create_application() -> FastAPI:
     # ── Global Exception Handlers ────────────────────────────────────────────
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException):
+        content = {"detail": exc.message, "error_code": exc.error_code, "success": False}
+        if hasattr(exc, "email") and exc.email:
+            content["email"] = exc.email
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": exc.message, "error_code": exc.error_code, "success": False},
+            content=content,
         )
 
     @app.exception_handler(Exception)
@@ -116,7 +131,8 @@ def create_application() -> FastAPI:
     # ── API Router ───────────────────────────────────────────────────────────
     app.include_router(api_router, prefix="/api/v1")
 
-    from app.api.v1.endpoints import startups, predictions
+    from app.api.v1.endpoints import auth, startups, predictions
+    app.include_router(auth.router, prefix="/api", tags=["Auth API (/api/auth)"])
     app.include_router(startups.router, prefix="/api/startups", tags=["Startups API"])
     app.include_router(predictions.router, prefix="/api/predictions", tags=["Predictions API"])
 
@@ -190,6 +206,14 @@ def create_application() -> FastAPI:
                     "email_service": {
                         "status": "enabled" if settings.EMAIL_ENABLED else "disabled",
                         "configured": bool(settings.RESEND_API_KEY and len(settings.RESEND_API_KEY) > 10),
+                    },
+                    "otp_service": {
+                        "status": "online",
+                        "configured": bool(settings.OTP_SECRET),
+                        "expiry_minutes": settings.OTP_EXPIRY_MINUTES,
+                    },
+                    "external_auth": {
+                        "configured": bool(settings.CLIENT_ID and settings.CLIENT_SECRET),
                     },
                     "report_service": {
                         "status": "online",

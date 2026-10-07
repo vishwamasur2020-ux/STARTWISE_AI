@@ -1,6 +1,6 @@
 /**
  * STARTWISE AI — useAuth Hook
- * Encapsulates login, register, logout, forgot-password, reset-password, and profile update mutations with TanStack Query.
+ * Encapsulates authentication, email verification, password reset, and session state.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -13,8 +13,12 @@ import { clearTokens } from '@/services/api'
 import type {
   LoginPayload,
   RegisterPayload,
+  VerifyEmailPayload,
+  ResendOTPPayload,
+  VerifyResetOTPPayload,
   ForgotPasswordPayload,
   ResetPasswordPayload,
+  ChangePasswordPayload,
   UserUpdatePayload,
 } from '@/types'
 
@@ -52,7 +56,16 @@ export function useAuth() {
       toast.success(`Welcome back, ${user.full_name.split(' ')[0]}! 🚀`)
       navigate('/dashboard')
     },
-    onError: () => setLoading(false),
+    onError: (error: any, variables) => {
+      setLoading(false)
+      const errDetail = error.response?.data?.detail
+      const errCode = error.response?.data?.error_code
+      if (errDetail === 'EMAIL_NOT_VERIFIED' || errCode === 'EMAIL_NOT_VERIFIED') {
+        const unverifiedEmail = error.response?.data?.email || variables.email
+        toast.error('Account unverified. Please enter your verification code.')
+        navigate('/verify-email', { state: { email: unverifiedEmail } })
+      }
+    },
     onSettled: () => setLoading(false),
   })
 
@@ -60,20 +73,39 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (payload: RegisterPayload) => authService.register(payload),
     onMutate: () => setLoading(true),
-    onSuccess: () => {
-      toast.success('Account created successfully! Please sign in. 🎉')
-      navigate('/login')
+    onSuccess: (_data, variables) => {
+      toast.success('Verification code sent to your email! ✉️')
+      navigate('/verify-email', { state: { email: variables.email } })
     },
     onError: () => setLoading(false),
     onSettled: () => setLoading(false),
   })
 
+  // ── Verify Email ─────────────────────────────────────────────────────────
+  const verifyEmailMutation = useMutation({
+    mutationFn: (payload: VerifyEmailPayload) => authService.verifyEmail(payload),
+  })
+
+  // ── Resend OTP ───────────────────────────────────────────────────────────
+  const resendOTPMutation = useMutation({
+    mutationFn: (payload: ResendOTPPayload) => authService.resendOTP(payload),
+    onSuccess: (data) => {
+      toast.success(data.message || 'Verification code sent!')
+    },
+  })
+
   // ── Forgot Password ──────────────────────────────────────────────────────
   const forgotPasswordMutation = useMutation({
     mutationFn: (payload: ForgotPasswordPayload) => authService.forgotPassword(payload),
-    onSuccess: (data) => {
-      toast.success(data.message || 'Reset link/OTP sent to your email!')
+    onSuccess: (data, variables) => {
+      toast.success(data.message || 'Verification code sent if account exists!')
+      navigate('/reset-password', { state: { email: variables.email } })
     },
+  })
+
+  // ── Verify Reset OTP ─────────────────────────────────────────────────────
+  const verifyResetOTPMutation = useMutation({
+    mutationFn: (payload: VerifyResetOTPPayload) => authService.verifyResetOTP(payload),
   })
 
   // ── Reset Password ───────────────────────────────────────────────────────
@@ -82,6 +114,14 @@ export function useAuth() {
     onSuccess: (data) => {
       toast.success(data.message || 'Password reset successfully! Please log in.')
       navigate('/login')
+    },
+  })
+
+  // ── Change Password (Logged In) ──────────────────────────────────────────
+  const changePasswordMutation = useMutation({
+    mutationFn: (payload: ChangePasswordPayload) => authService.changePassword(payload),
+    onSuccess: (data) => {
+      toast.success(data.message || 'Password changed successfully! ✨')
     },
   })
 
@@ -117,10 +157,24 @@ export function useAuth() {
     register: registerMutation.mutate,
     registerAsync: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,
+    verifyEmail: verifyEmailMutation.mutate,
+    verifyEmailAsync: verifyEmailMutation.mutateAsync,
+    isVerifyingEmail: verifyEmailMutation.isPending,
+    resendOTP: resendOTPMutation.mutate,
+    resendOTPAsync: resendOTPMutation.mutateAsync,
+    isResendingOTP: resendOTPMutation.isPending,
     forgotPassword: forgotPasswordMutation.mutate,
+    forgotPasswordAsync: forgotPasswordMutation.mutateAsync,
     isSubmittingForgotPassword: forgotPasswordMutation.isPending,
+    verifyResetOTP: verifyResetOTPMutation.mutate,
+    verifyResetOTPAsync: verifyResetOTPMutation.mutateAsync,
+    isVerifyingResetOTP: verifyResetOTPMutation.isPending,
     resetPassword: resetPasswordMutation.mutate,
+    resetPasswordAsync: resetPasswordMutation.mutateAsync,
     isSubmittingResetPassword: resetPasswordMutation.isPending,
+    changePassword: changePasswordMutation.mutate,
+    changePasswordAsync: changePasswordMutation.mutateAsync,
+    isChangingPassword: changePasswordMutation.isPending,
     updateProfile: updateProfileMutation.mutate,
     isUpdatingProfile: updateProfileMutation.isPending,
     logout: logoutMutation.mutate,

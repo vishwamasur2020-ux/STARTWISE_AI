@@ -4,6 +4,7 @@
  */
 
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -104,14 +105,18 @@ export default function ProfilePage() {
               </span>
 
               {/* Verified Badge */}
-              {user?.is_verified ? (
+              {(user?.email_verified ?? user?.is_verified) ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                   <ShieldCheck className="h-3.5 w-3.5" /> Verified
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-300 dark:border-zinc-700">
-                  Unverified
-                </span>
+                <Link
+                  to="/verify-email"
+                  state={{ email: user?.email }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-200 transition-colors"
+                >
+                  Unverified (Click to verify)
+                </Link>
               )}
             </div>
 
@@ -218,15 +223,15 @@ export default function ProfilePage() {
             </div>
 
             <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
-              Want to update your password or refresh security credentials?
+              Update your account password, manage verification status, and secure active sessions.
             </p>
 
-            <a
-              href="/forgot-password"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline pt-1"
+            <Link
+              to="/settings/security"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline pt-1"
             >
-              Request Password Reset →
-            </a>
+              Change Password & Security Settings →
+            </Link>
           </div>
 
           {/* Logout Box */}

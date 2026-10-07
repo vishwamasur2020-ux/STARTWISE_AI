@@ -59,6 +59,18 @@ export default function AdminUserDetailPage() {
                 <span className={`h-1.5 w-1.5 rounded-full ${u.is_active ? 'bg-green-400' : 'bg-red-400'}`} />
                 {u.is_active ? 'Active' : 'Inactive'}
               </span>
+
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${
+                u.email_verified ?? u.is_verified ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-700 text-slate-400 border-white/10'
+              }`}>
+                {u.email_verified ?? u.is_verified ? '✓ Email Verified' : '— Unverified'}
+              </span>
+
+              {u.email_verified_at && (
+                <span className="text-xs text-slate-400">
+                  Verified: {new Date(u.email_verified_at).toLocaleDateString()}
+                </span>
+              )}
             </div>
             <p className="text-slate-400 mt-1">{u.email}</p>
             {u.phone && <p className="text-slate-500 text-sm">{u.phone}</p>}

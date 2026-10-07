@@ -181,6 +181,13 @@ async def test_marketing_forbidden_cross_user_access(client: AsyncClient, user_t
         "password": pass_b,
         "confirm_password": pass_b,
     })
+    from app.database.session import AsyncSessionLocal
+    from app.models.models import User
+    from sqlalchemy import update
+    async with AsyncSessionLocal() as session:
+        await session.execute(update(User).where(User.email == email_b.lower()).values(email_verified=True, is_verified=True))
+        await session.commit()
+
     res_login = await client.post("/api/v1/auth/login", json={"email": email_b, "password": pass_b})
     token_b = res_login.json()["access_token"]
     headers_b = {"Authorization": f"Bearer {token_b}"}

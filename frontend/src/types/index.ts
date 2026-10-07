@@ -6,6 +6,8 @@ export interface User {
   role: 'user' | 'admin';
   is_active: boolean;
   is_verified: boolean;
+  email_verified?: boolean;
+  email_verified_at?: string | null;
   avatar_url?: string | null;
   profile_image?: string | null;
   phone?: string | null;
@@ -36,15 +38,51 @@ export interface RegisterPayload {
   phone?: string;
 }
 
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+  email: string;
+  requires_verification: boolean;
+}
+
+export interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}
+
+export interface ResendOTPPayload {
+  email: string;
+  purpose?: 'EMAIL_VERIFICATION' | 'PASSWORD_RESET';
+}
+
+export interface VerifyResetOTPPayload {
+  email: string;
+  otp: string;
+}
+
 export interface ForgotPasswordPayload {
   email: string;
 }
 
 export interface ResetPasswordPayload {
+  email?: string;
+  otp?: string;
   otp_or_token?: string;
   token?: string;
   new_password: string;
   confirm_password?: string;
+}
+
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  confirm_password?: string;
+}
+
+export interface VerificationStatus {
+  email: string;
+  email_verified: boolean;
+  email_verified_at?: string | null;
 }
 
 export interface UserUpdatePayload {

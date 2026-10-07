@@ -67,7 +67,24 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
+class ResendOTPRequest(BaseModel):
+    email: EmailStr
+    purpose: str = Field("EMAIL_VERIFICATION", pattern=r"^(EMAIL_VERIFICATION|PASSWORD_RESET)$")
+
+
+class VerifyResetOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
 class ResetPasswordRequest(BaseModel):
+    email: Optional[EmailStr] = None
+    otp: Optional[str] = None
     otp_or_token: Optional[str] = None
     token: Optional[str] = None
     new_password: str = Field(..., min_length=8, max_length=128)
@@ -84,15 +101,59 @@ class ResetPasswordRequest(BaseModel):
             raise ValueError("Password must contain at least one lowercase letter.")
         if not re.search(r"[0-9]", v):
             raise ValueError("Password must contain at least one digit.")
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]", v):
+            raise ValueError("Password must contain at least one special character.")
         return v
 
     @model_validator(mode="after")
     def check_reset_passwords_match(self) -> "ResetPasswordRequest":
         if self.confirm_password and self.new_password != self.confirm_password:
             raise ValueError("Passwords do not match.")
-        if not self.otp_or_token and not self.token:
-            raise ValueError("Reset token or OTP is required.")
+        if not self.otp and not self.otp_or_token and not self.token:
+            raise ValueError("Reset OTP or token is required.")
         return self
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
+    confirm_password: Optional[str] = None
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_strong_new_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long.")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter.")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter.")
+        if not re.search(r"[0-9]", v):
+            raise ValueError("Password must contain at least one digit.")
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]", v):
+            raise ValueError("Password must contain at least one special character.")
+        return v
+
+    @model_validator(mode="after")
+    def check_passwords_valid(self) -> "ChangePasswordRequest":
+        if self.confirm_password and self.new_password != self.confirm_password:
+            raise ValueError("Passwords do not match.")
+        if self.current_password == self.new_password:
+            raise ValueError("New password must be different from your current password.")
+        return self
+
+
+class VerificationStatusResponse(BaseModel):
+    email: str
+    email_verified: bool
+    email_verified_at: Optional[datetime] = None
+
+
+class AuthRegisterResponse(BaseModel):
+    success: bool = True
+    message: str = "Verification code sent to your email."
+    email: str
+    requires_verification: bool = True
 
 
 # ─── User Schemas ─────────────────────────────────────────────────────────────
@@ -103,6 +164,8 @@ class UserOut(BaseResponse):
     role: str
     is_active: bool
     is_verified: bool
+    email_verified: bool = False
+    email_verified_at: Optional[datetime] = None
     avatar_url: Optional[str] = None
     profile_image: Optional[str] = None
     phone: Optional[str] = None

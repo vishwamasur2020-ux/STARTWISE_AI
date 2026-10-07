@@ -61,6 +61,8 @@ class User(Base, UUIDMixin, TimestampMixin):
     role: Mapped[UserRole] = mapped_column(SAEnum(UserRole), default=UserRole.user, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     profile_image_col: Mapped[Optional[str]] = mapped_column("profile_image", String(500), nullable=True)
@@ -101,6 +103,9 @@ class User(Base, UUIDMixin, TimestampMixin):
         back_populates="user", cascade="all, delete-orphan"
     )
     password_resets: Mapped[List["PasswordReset"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    otp_verifications: Mapped[List["OTPVerification"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -534,3 +539,31 @@ class AuditLog(Base, UUIDMixin):
     )
 
     user: Mapped[Optional["User"]] = relationship(back_populates="audit_logs")
+
+
+# ─── OTP Verification Model ───────────────────────────────────────────────────
+class OTPVerification(Base, UUIDMixin):
+    __tablename__ = "otp_verifications"
+
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    otp_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    purpose: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # EMAIL_VERIFICATION, PASSWORD_RESET
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    used_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sent_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Relationships
+    user: Mapped[Optional["User"]] = relationship(back_populates="otp_verifications")
+

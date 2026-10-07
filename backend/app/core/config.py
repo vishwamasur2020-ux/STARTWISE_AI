@@ -6,7 +6,7 @@ Loads from .env file with validation and type safety.
 from functools import lru_cache
 from typing import List, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import field_validator
+from pydantic import field_validator, SecretStr
 
 
 class Settings(BaseSettings):
@@ -62,6 +62,18 @@ class Settings(BaseSettings):
     EMAIL_FROM_NAME: str = "STARTWISE AI"
     EMAIL_ENABLED: bool = False
     REPORT_STORAGE_DIR: str = "reports"
+
+    # ── External Provider / OAuth Credentials (Backend Only) ────────────────
+    CLIENT_ID: Union[SecretStr, str, None] = None
+    CLIENT_SECRET: Union[SecretStr, str, None] = None
+
+    # ── OTP & Verification Security ──────────────────────────────────────────
+    OTP_SECRET: Union[SecretStr, str, None] = None
+    OTP_EXPIRY_MINUTES: int = 10
+    OTP_MAX_ATTEMPTS: int = 5
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    OTP_MAX_SENDS_PER_WINDOW: int = 3
+    OTP_RATE_LIMIT_WINDOW_MINUTES: int = 15
 
     # ── Logging ──────────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"

@@ -161,7 +161,7 @@ export default function AdminUsersPage() {
                 <th className="text-left py-3.5 px-4">User</th>
                 <th className="text-left py-3.5 px-4">Role</th>
                 <th className="text-left py-3.5 px-4">Status</th>
-                <th className="text-left py-3.5 px-4">Verified</th>
+                <th className="text-left py-3.5 px-4">Email Verified</th>
                 <th className="text-left py-3.5 px-4 hidden md:table-cell">Startups</th>
                 <th className="text-left py-3.5 px-4 hidden lg:table-cell">Joined</th>
                 <th className="text-right py-3.5 px-4">Actions</th>
@@ -201,9 +201,16 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-4"><Badge role={u.role} /></td>
                     <td className="py-3.5 px-4"><StatusBadge active={u.is_active} /></td>
                     <td className="py-3.5 px-4">
-                      <span className={`text-xs font-semibold ${u.is_verified ? 'text-green-400' : 'text-slate-500'}`}>
-                        {u.is_verified ? '✓ Verified' : '— Unverified'}
-                      </span>
+                      <div>
+                        <span className={`text-xs font-semibold ${u.email_verified ?? u.is_verified ? 'text-green-400' : 'text-slate-500'}`}>
+                          {u.email_verified ?? u.is_verified ? '✓ Verified' : '— Unverified'}
+                        </span>
+                        {u.email_verified_at && (
+                          <p className="text-[10px] text-slate-500">
+                            {new Date(u.email_verified_at).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 hidden md:table-cell">
                       <span className="text-slate-400 text-xs">{u.startup_count}</span>

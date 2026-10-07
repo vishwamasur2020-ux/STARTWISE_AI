@@ -43,6 +43,16 @@ class ForbiddenException(StartwiseBaseException):
     detail = "You don't have permission to perform this action."
 
 
+class EmailNotVerifiedException(StartwiseBaseException):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "EMAIL_NOT_VERIFIED"
+
+    def __init__(self, email: str = "", message: str = "Please verify your email before logging in."):
+        super().__init__(detail="EMAIL_NOT_VERIFIED", message=message, error_code="EMAIL_NOT_VERIFIED")
+        self.email = email
+
+
+
 class ConflictException(StartwiseBaseException):
     status_code = status.HTTP_409_CONFLICT
     detail = "Resource already exists."

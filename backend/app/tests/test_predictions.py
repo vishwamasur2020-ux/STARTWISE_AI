@@ -190,6 +190,13 @@ async def test_cross_user_access_forbidden(
     res_reg = await client.post("/api/v1/auth/register", json=second_user_payload)
     assert res_reg.status_code == 201
 
+    from app.database.session import AsyncSessionLocal
+    from app.models.models import User
+    from sqlalchemy import update
+    async with AsyncSessionLocal() as session:
+        await session.execute(update(User).where(User.email == email_b.lower()).values(email_verified=True, is_verified=True))
+        await session.commit()
+
     res_login = await client.post("/api/v1/auth/login", json={"email": email_b, "password": pass_b})
     assert res_login.status_code == 200
     user_b_token = res_login.json()["access_token"]

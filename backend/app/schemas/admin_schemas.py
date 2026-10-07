@@ -58,6 +58,8 @@ class AdminUserOut(AdminBase):
     role: str
     is_active: bool
     is_verified: bool
+    email_verified: bool = False
+    email_verified_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     startup_count: int = 0
@@ -81,6 +83,8 @@ class AdminUserDetail(AdminBase):
     role: str
     is_active: bool
     is_verified: bool
+    email_verified: bool = False
+    email_verified_at: Optional[datetime] = None
     phone: Optional[str] = None
     location: Optional[str] = None
     created_at: datetime

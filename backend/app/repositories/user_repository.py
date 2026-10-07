@@ -64,10 +64,17 @@ class UserRepository(BaseRepository[User]):
         )
         await self.db.flush()
 
-    async def revoke_all_user_refresh_tokens(self, user_id: UUID) -> None:
+    async def revoke_all_user_refresh_tokens(self, user_id: Any) -> None:
+        from uuid import UUID as PyUUID
+        uid = getattr(user_id, "id", user_id)
+        if isinstance(uid, str):
+            try:
+                uid = PyUUID(uid)
+            except Exception:
+                pass
         await self.db.execute(
             update(RefreshToken)
-            .where(RefreshToken.user_id == user_id)
+            .where(RefreshToken.user_id == uid)
             .values(revoked=True)
         )
         await self.db.flush()

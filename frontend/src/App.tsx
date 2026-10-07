@@ -21,6 +21,8 @@ const LoginPage             = lazy(() => import('@/pages/LoginPage'))
 const RegisterPage          = lazy(() => import('@/pages/RegisterPage'))
 const ForgotPasswordPage    = lazy(() => import('@/pages/ForgotPasswordPage'))
 const ResetPasswordPage     = lazy(() => import('@/pages/ResetPasswordPage'))
+const VerifyEmailPage       = lazy(() => import('@/pages/VerifyEmailPage'))
+const SecuritySettingsPage  = lazy(() => import('@/pages/SecuritySettingsPage'))
 const ProfilePage           = lazy(() => import('@/pages/ProfilePage'))
 const DashboardPage         = lazy(() => import('@/pages/DashboardPage'))
 const StartupValidationPage = lazy(() => import('@/pages/StartupValidationPage'))
@@ -98,6 +100,9 @@ export default function App() {
                 <Route path="/reset-password"  element={<ResetPasswordPage />} />
               </Route>
 
+              {/* Email Verification (Public/Unverified access) */}
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
+
               {/* Protected Dashboard App Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<DashboardLayout />}>
@@ -114,6 +119,7 @@ export default function App() {
                   <Route path="/reports"                     element={<ReportsPage />} />
                   <Route path="/profile"                     element={<ProfilePage />} />
                   <Route path="/settings"                    element={<ProfilePage />} />
+                  <Route path="/settings/security"           element={<SecuritySettingsPage />} />
                 </Route>
 
                 {/* Admin Only Layout & Routes */}
